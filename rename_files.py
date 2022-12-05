@@ -6,25 +6,19 @@ import shutil
 
 
 def main():
-    jpgs = glob.glob("*.jpg")
-    prefixes = set([jpg.split(sep="_")[0] for jpg in jpgs])
-
-    for prefix in prefixes:
+    jpgs = [(jpg.split(sep="_")[0], jpg) for jpg in glob.glob("*.jpg")]
+    iter = itertools.groupby(jpgs, lambda x : x[0])
+  
+    for prefix, group in iter:
         os.mkdir(prefix)
-        for image in glob.glob(prefix + "*.jpg"):
-            shutil.copy(image, prefix)
-
-        os.chdir(prefix)
-
-        image_names  = glob.glob(prefix + "*.jpg")
         image_prefix = prefix.split(sep="-")[-1]
         image_prefix = re.sub("P", ".", image_prefix)
-        
-        new_names  = [image_prefix + "-" + str(i).zfill(4) + ".jpg" for i in range(1, len(image_names) + 1)]
-        for i, j in zip(image_names, new_names):
-            os.rename(i, j)
 
-        os.chdir("../")
+        i = 1
+        for file in group:
+            shutil.copy(file[1], prefix)
+            os.rename(prefix + "/" + file[1], prefix + "/" + image_prefix + "-" + str(i).zfill(4) + ".jpg")
+            i += 1
 
 if __name__ == "__main__":
     main()
